@@ -487,15 +487,10 @@ class Megalinter:
             "Listing updated files in [" + self.github_workspace + "] using git diff."
         )
         repo = git.Repo(os.path.realpath(self.github_workspace))
-        default_branch = config.get("DEFAULT_BRANCH", "master")
-        default_branch_remote = f"origin/{default_branch}"
-        if default_branch_remote not in [ref.name for ref in repo.refs]:
-            # Try to fetch default_branch from origin, because it isn't cached locally.
-            repo.git.fetch(
-                "origin",
-                f"refs/heads/{default_branch}:refs/remotes/{default_branch_remote}",
-            )
-        diff = repo.git.diff(default_branch_remote, name_only=True)
+        if "origin/HEAD" not in [ref.name for ref in repo.refs]:
+            # Try to fetch HEAD from origin, because it isn't cached locally.
+            repo.git.fetch("origin", "HEAD:refs/remotes/origin/HEAD")
+        diff = repo.git.diff("origin/HEAD", name_only=True)
         logging.info(f"Modified files:\n{diff}")
         all_files = list()
         for diff_line in diff.splitlines():
